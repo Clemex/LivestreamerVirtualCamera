@@ -4,27 +4,21 @@
 #include "PushGuids.h"
 #include "Livestreamer.h"
 
+#include "debug_helpers.h"
+
 #define MIN(a,b)  ((a) < (b) ? (a) : (b))  // danger! can evaluate "a" twice.
 
 // the default child constructor...
 CPushPinDesktop::CPushPinDesktop(HRESULT *phr, CSource *pFilter)
         : CSourceStream(NAME("Push Source CPushPinDesktop child/pin"), phr, pFilter, L"Capture"),
-		pOldData(NULL),
-		hRawBitmap(NULL),
-		previousFrameEndTime(0),
-      livestreamer()
+		previousFrameEndTime(0)
 {
+   livestreamer = new Livestreamer();
 	//launchDebugger();
 	hScrDc = GetDC(NULL);
 	
-	int config_width = 900; // read_config_setting(TEXT("capture_width"), 0, false);
-	int config_height = 600; // read_config_setting(TEXT("capture_height"), 0, false);
-
-	// default 30 fps...hmm...
-	int config_max_fps = 30;
-
 	// m_rtFrameLength is also re-negotiated later...
-  	m_rtFrameLength = UNITS / config_max_fps; 
+  	m_rtFrameLength = UNITS / 30; 
 }
 
 CPushPinDesktop::~CPushPinDesktop()
@@ -34,13 +28,6 @@ CPushPinDesktop::~CPushPinDesktop()
    ::ReleaseDC(NULL, hScrDc);
    ::DeleteDC(hScrDc);
 
-   if (hRawBitmap)
-      DeleteObject(hRawBitmap); // don't need those bytes anymore -- I think we are supposed to delete just this and not hOldBitmap
-
-   if (pOldData) {
-      free(pOldData);
-      pOldData = NULL;
-   }
 }
 
 void CPushPinDesktop::CopyImageToDataBlock(HDC hScrDC, BYTE *pData, BITMAPINFO *pHeader, IMediaSample *pSample)
@@ -54,7 +41,6 @@ void CPushPinDesktop::CopyImageToDataBlock(HDC hScrDC, BYTE *pData, BITMAPINFO *
    BITMAPINFO tweakableHeader;
    memcpy(&tweakableHeader, pHeader, sizeof(BITMAPINFO));
 
-   auto x = livestreamer->GetNextFrame();
    GetDIBits(hScrDC, livestreamer->GetNextFrame(), 0, iFinalStretchHeight, pData, &tweakableHeader, DIB_RGB_COLORS);
    // clean up
    DeleteDC(hMemDC);
@@ -113,18 +99,6 @@ HRESULT CPushPinDesktop::DecideBufferSize(IMemAllocator *pAlloc, ALLOCATOR_PROPE
    {
       return E_FAIL;
    }
-
-   if (pOldData) {
-      free(pOldData);
-      pOldData = NULL;
-   }
-   pOldData = (BYTE *)malloc(max(pProperties->cbBuffer*pProperties->cBuffers, bitmapSize)); // we convert from a 32 bit to i420, so need more space, hence max
-   memset(pOldData, 0, pProperties->cbBuffer*pProperties->cBuffers); // reset it just in case :P	
-
-                                                                     // create a bitmap compatible with the screen DC
-   if (hRawBitmap)
-      DeleteObject(hRawBitmap); // delete the old one in case it exists...
-   hRawBitmap = CreateCompatibleBitmap(hScrDc, livestreamer->GetWidth(), livestreamer->GetHeight());
 
    return NOERROR;
 } // DecideBufferSize
@@ -307,7 +281,7 @@ HRESULT STDMETHODCALLTYPE CPushPinDesktop::SetFormat(AM_MEDIA_TYPE *pmt)
 }
 
 CPushSourceDesktop::CPushSourceDesktop(IUnknown *pUnk, HRESULT *phr)
-   : CSource(NAME("PushSourceDesktop Parent"), pUnk, CLSID_PushSourceDesktop)
+   : CSource(NAME("Livestreamer Virtual Camera"), pUnk, CLSID_LivestreamerVirtualCamera)
 {
    // The pin magically adds itself to our pin array.
    // except its not an array since we just have one [?]
@@ -331,6 +305,8 @@ CPushSourceDesktop::~CPushSourceDesktop() // parent destructor
 
 CUnknown * WINAPI CPushSourceDesktop::CreateInstance(IUnknown *pUnk, HRESULT *phr)
 {
+   //launchDebugger();
+
    // the first entry point
    CPushSourceDesktop *pNewFilter = new CPushSourceDesktop(pUnk, phr);
 

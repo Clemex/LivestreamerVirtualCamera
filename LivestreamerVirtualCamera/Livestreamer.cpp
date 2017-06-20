@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Livestreamer.h"
 
-Livestreamer::Livestreamer() : context(1), socket(context, ZMQ_SUB), memory_buffer(NULL), last_frame()
+Livestreamer::Livestreamer() : context(1), socket(context, ZMQ_SUB), memory_buffer(NULL), last_frame(), last_bitmap()
 {
    InitZMQ();
 }
@@ -53,6 +53,8 @@ HBITMAP Livestreamer::ConvertMatToBitmap(cv::Mat frame)
          &bitmapInfo,
          DIB_RGB_COLORS);
 
+      DeleteObject(last_bitmap);
+      last_bitmap = bmp;
       return bmp;
    }
    else
@@ -79,7 +81,7 @@ cv::Mat Livestreamer::GrabFrameFromZMQ()
       if (memory_buffer != NULL)
          delete memory_buffer;
       memory_buffer_size = reply.size();
-      memory_buffer = new char[memory_buffer_size];
+      memory_buffer = new unsigned char[memory_buffer_size];
    }
    memcpy(memory_buffer, reply.data(), reply.size());
    unsigned int height = memory_buffer[0] | memory_buffer[1] << 8;

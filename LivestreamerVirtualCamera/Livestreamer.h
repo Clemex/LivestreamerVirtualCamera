@@ -8,11 +8,12 @@ public:
    int GetWidth();
    int GetHeight();
 private:
-   char* memory_buffer;
+   unsigned char* memory_buffer;
    long memory_buffer_size;
    zmq::context_t context;
    zmq::socket_t socket;
    cv::Mat last_frame;
+   HBITMAP last_bitmap;
    HBITMAP ConvertMatToBitmap(cv::Mat frame);
    void InitZMQ();
    cv::Mat GrabFrameFromZMQ();

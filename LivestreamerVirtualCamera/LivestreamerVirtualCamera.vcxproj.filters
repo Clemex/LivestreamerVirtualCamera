@@ -55,7 +55,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PushSource.def">
+    <None Include="LivestreamerVirtualCamera.def">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

@@ -20,12 +20,9 @@ protected:
 	REFERENCE_TIME previousFrameEndTime;
    Livestreamer* livestreamer;
 	HDC hScrDc;
-	HBITMAP     hRawBitmap;
 
 	int m_millisToSleepBeforePollForChanges;
 	void CopyImageToDataBlock(HDC hScrDc, BYTE *pData, BITMAPINFO *pHeader, IMediaSample *pSample);
-
-    BYTE *pOldData;
 
 public:
 

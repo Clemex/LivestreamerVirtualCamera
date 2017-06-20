@@ -42,7 +42,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -81,16 +81,19 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\libzmq\include;../baseclasses;../../clemex-projects/clemex_venv/Library/Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SDLCheck>false</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Program Files\ZeroMQ 4.0.4\include;C:\opencv\build\include;..\..\BaseClasses\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;PUSHSOURCE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CallingConvention>StdCall</CallingConvention>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\Users\Benoit Paquet\GitHub\libzmq\bin\x64\Debug\v141\dynamic;C:\Users\Benoit Paquet\GitHub\LivestreamerVirtualCamera\baseclasses\x64\Debug;../../clemex-projects/clemex_venv/Library/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files\ZeroMQ 4.0.4\lib;C:\opencv\build\x64\vc14\lib;..\..\BaseClasses\x64\Debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
-      <AdditionalDependencies>strmbasd.lib;winmm.lib;msvcrtd.lib;opencv_core310.lib;opencv_imgcodecs310.lib;opencv_highgui310.lib;opencv_imgproc310.lib;libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>PushSource.def</ModuleDefinitionFile>
+      <AdditionalDependencies>libzmq-v120-mt-gd-4_0_4.lib;strmbasd.lib;winmm.lib;opencv_world310.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>LivestreamerVirtualCamera.def</ModuleDefinitionFile>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,7 +146,7 @@
     <ClInclude Include="zmq_addon.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PushSource.def" />
+    <None Include="LivestreamerVirtualCamera.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

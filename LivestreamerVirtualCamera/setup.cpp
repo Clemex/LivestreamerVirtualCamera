@@ -12,6 +12,7 @@
 
 #include "PushGuids.h"
 #include "PushSource.h"
+#include "debug_helpers.h"
 
 // Note: It is better to register no media types than to register a partial 
 // media type (subtype == GUID_NULL) because that can slow down intelligent connect 
@@ -45,11 +46,11 @@ const AMOVIESETUP_PIN sudOutputPinDesktop =
 
 const AMOVIESETUP_FILTER sudPushSourceDesktop =
 {
-    &CLSID_PushSourceDesktop,// Filter CLSID
-    g_wszPushDesktop,       // String name
-    MERIT_DO_NOT_USE,       // Filter merit
-    1,                      // Number pins
-    &sudOutputPinDesktop    // Pin details
+    &CLSID_LivestreamerVirtualCamera,  // Filter CLSID
+    g_wszPushDesktop,                  // String name
+    MERIT_DO_NOT_USE,                  // Filter merit
+    1,                                 // Number pins
+    &sudOutputPinDesktop               // Pin details
 };
 
 
@@ -61,11 +62,11 @@ const AMOVIESETUP_FILTER sudPushSourceDesktop =
 CFactoryTemplate g_Templates[1] = 
 {
     { 
-      g_wszPushDesktop,               // Name
-      &CLSID_PushSourceDesktop,       // CLSID
-      CPushSourceDesktop::CreateInstance, // Method to create an instance of MyComponent
-      NULL,                           // Initialization function
-      &sudPushSourceDesktop           // Set-up information (for filters)
+      g_wszPushDesktop,                    // Name
+      &CLSID_LivestreamerVirtualCamera,    // CLSID
+      CPushSourceDesktop::CreateInstance,  // Method to create an instance of MyComponent
+      NULL,                                // Initialization function
+      &sudPushSourceDesktop                // Set-up information (for filters)
     },
 };
 
@@ -92,7 +93,7 @@ STDAPI RegisterFilters( BOOL bRegister )
     hr = CoInitialize(0);
     if(bRegister)
     { 
-        hr = AMovieSetupRegisterServer(CLSID_PushSourceDesktop, L"screen-capture-recorder", achFileName, L"Both", L"InprocServer32");
+        hr = AMovieSetupRegisterServer(CLSID_LivestreamerVirtualCamera, L"Livestreamer Virtual Camera", achFileName, L"Both", L"InprocServer32");
     }
 
     if( SUCCEEDED(hr) )
@@ -110,11 +111,11 @@ STDAPI RegisterFilters( BOOL bRegister )
                 rf2.cPins = 1;
                 rf2.rgPins = &sudOutputPinDesktop;
 				// this is the name that actually shows up in VLC et al. weird
-                hr = fm->RegisterFilter(CLSID_PushSourceDesktop, L"screen-capture-recorder", &pMoniker, &CLSID_VideoInputDeviceCategory, NULL, &rf2);
+                hr = fm->RegisterFilter(CLSID_LivestreamerVirtualCamera, L"Livestreamer Virtual Camera", &pMoniker, &CLSID_VideoInputDeviceCategory, NULL, &rf2);
             }
             else
             {
-                hr = fm->UnregisterFilter(&CLSID_VideoInputDeviceCategory, 0, CLSID_PushSourceDesktop);
+                hr = fm->UnregisterFilter(&CLSID_VideoInputDeviceCategory, 0, CLSID_LivestreamerVirtualCamera);
             }
         }
 
@@ -125,7 +126,7 @@ STDAPI RegisterFilters( BOOL bRegister )
     }
 
     if( SUCCEEDED(hr) && !bRegister )
-        hr = AMovieSetupUnregisterServer( CLSID_PushSourceDesktop );
+        hr = AMovieSetupUnregisterServer(CLSID_LivestreamerVirtualCamera);
 
     CoFreeUnusedLibraries();
     CoUninitialize();
