@@ -1,14 +1,17 @@
 #include "stdafx.h"
 #include "Livestreamer.h"
 
-Livestreamer::Livestreamer() : context(1), socket(context, ZMQ_SUB) 
+Livestreamer::Livestreamer() : context(1), socket(context, ZMQ_SUB), memory_buffer(NULL), last_frame()
 {
    InitZMQ();
 }
 
 Livestreamer::~Livestreamer() 
 {
-
+   socket.close();
+   context.close();
+   delete memory_buffer;
+   last_frame.release();
 }
 
 HBITMAP Livestreamer::GetNextFrame()
@@ -20,8 +23,6 @@ HBITMAP Livestreamer::GetNextFrame()
 HBITMAP Livestreamer::ConvertMatToBitmap(cv::Mat frame)
 {
    auto imageSize = frame.size();
-   assert(imageSize.width && "invalid size provided by frame");
-   assert(imageSize.height && "invalid size provided by frame");
 
    if (imageSize.width && imageSize.height)
    {
@@ -45,14 +46,12 @@ HBITMAP Livestreamer::ConvertMatToBitmap(cv::Mat frame)
       bitmapInfo.bmiColors->rgbReserved = 0;
 
       auto dc = GetDC(nullptr);
-      assert(dc != nullptr && "Failure to get DC");
       auto bmp = CreateDIBitmap(dc,
          &headerInfo,
          CBM_INIT,
          frame.data,
          &bitmapInfo,
          DIB_RGB_COLORS);
-      assert(bmp != nullptr && "Failure creating bitmap from captured frame");
 
       return bmp;
    }
@@ -68,34 +67,36 @@ void Livestreamer::InitZMQ()
    socket.setsockopt(ZMQ_RCVHWM, 1);
    socket.connect("tcp://127.0.0.1:5577");
    socket.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+   GrabFrameFromZMQ();
 }
 
 cv::Mat Livestreamer::GrabFrameFromZMQ()
 {
    zmq::message_t reply;
    socket.recv(&reply, 0);
-   char* cc = new char[reply.size()];
-   memcpy(cc, reply.data(), reply.size());
-   delete cc;
-   unsigned int height = cc[0] | cc[1] << 8;
-   unsigned int width = cc[2] | cc[3] << 8;
-   unsigned int channels = cc[4];
-   auto m = cv::Mat(height, width, CV_8UC(channels), &cc[5]);
+   if (reply.size() != memory_buffer_size)
+   {
+      if (memory_buffer != NULL)
+         delete memory_buffer;
+      memory_buffer_size = reply.size();
+      memory_buffer = new char[memory_buffer_size];
+   }
+   memcpy(memory_buffer, reply.data(), reply.size());
+   unsigned int height = memory_buffer[0] | memory_buffer[1] << 8;
+   unsigned int width = memory_buffer[2] | memory_buffer[3] << 8;
+   unsigned int channels = memory_buffer[4];
+   auto m = cv::Mat(height, width, CV_8UC(channels), &memory_buffer[5]);
+   last_frame.release();
+   last_frame = m;
    return m;
 }
 
-int getNegotiatedFinalWidth() {
-   return 0;
+int Livestreamer::GetHeight()
+{
+   return last_frame.rows;
 }
 
-int getNegotiatedFinalHeight() {
-   return 0;
-}
-
-int getCaptureDesiredFinalWidth() {
-   return 0;
-}
-
-int getCaptureDesiredFinalHeight() {
-   return 0;
+int Livestreamer::GetWidth()
+{
+   return last_frame.cols;
 }

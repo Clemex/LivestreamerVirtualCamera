@@ -6,6 +6,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------------------------
 
+#include "Livestreamer.h"
+
 // Filter name strings
 #define g_wszPushDesktop    L"PushSource Desktop Filter"
 
@@ -16,13 +18,12 @@ protected:
 	int m_iFrameNumber;
    REFERENCE_TIME m_rtFrameLength; // also used to get the fps
 	REFERENCE_TIME previousFrameEndTime;
-   Livestreamer livestreamer;
+   Livestreamer* livestreamer;
 	HDC hScrDc;
 	HBITMAP     hRawBitmap;
 
 	int m_millisToSleepBeforePollForChanges;
-	void CopyScreenToDataBlock(HDC hScrDc, BYTE *pData, BITMAPINFO *pHeader, IMediaSample *pSample);
-	void doDIBits(HDC hScrDC, HBITMAP hRawBitmap, int nHeightScanLines, BYTE *pData, BITMAPINFO *pHeader);
+	void CopyImageToDataBlock(HDC hScrDc, BYTE *pData, BITMAPINFO *pHeader, IMediaSample *pSample);
 
     BYTE *pOldData;
 
