@@ -3,6 +3,7 @@
 
 Livestreamer::Livestreamer() : context(1), socket(context, ZMQ_SUB), memory_buffer(NULL), last_frame(), last_bitmap()
 {
+   bitmap_dc = GetDC(nullptr);
    InitZMQ();
 }
 
@@ -12,6 +13,8 @@ Livestreamer::~Livestreamer()
    context.close();
    delete memory_buffer;
    last_frame.release();
+   DeleteObject(bitmap_dc);
+   DeleteObject(last_bitmap);
 }
 
 HBITMAP Livestreamer::GetNextFrame()
@@ -45,8 +48,7 @@ HBITMAP Livestreamer::ConvertMatToBitmap(cv::Mat frame)
       bitmapInfo.bmiColors->rgbRed = 0;
       bitmapInfo.bmiColors->rgbReserved = 0;
 
-      auto dc = GetDC(nullptr);
-      auto bmp = CreateDIBitmap(dc,
+      auto bmp = CreateDIBitmap(bitmap_dc,
          &headerInfo,
          CBM_INIT,
          frame.data,
