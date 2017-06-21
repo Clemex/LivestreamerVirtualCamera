@@ -31,7 +31,7 @@ const AMOVIESETUP_MEDIATYPE sudOpPinTypes =
     &MEDIASUBTYPE_NULL      // Minor type
 };
 
-const AMOVIESETUP_PIN sudOutputPinDesktop = 
+const AMOVIESETUP_PIN sudOutputPinDesktop =
 {
     L"Output",      // Obsolete, not used.
     FALSE,          // Is this pin rendered?
@@ -59,9 +59,9 @@ const AMOVIESETUP_FILTER sudPushSourceDesktop =
 // being created. The class factory will call the static CreateInstance.
 // We provide a set of filters in this one DLL.
 
-CFactoryTemplate g_Templates[1] = 
+CFactoryTemplate g_Templates[1] =
 {
-    { 
+    {
       g_wszPushDesktop,                    // Name
       &CLSID_LivestreamerVirtualCamera,    // CLSID
       CPushSourceDesktop::CreateInstance,  // Method to create an instance of MyComponent
@@ -70,39 +70,39 @@ CFactoryTemplate g_Templates[1] =
     },
 };
 
-int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]);    
+int g_cTemplates = sizeof(g_Templates) / sizeof(g_Templates[0]);
 
 #define CreateComObject(clsid, iid, var) CoCreateInstance( clsid, NULL, CLSCTX_INPROC_SERVER, iid, (void **)&var);
 
-STDAPI AMovieSetupRegisterServer( CLSID   clsServer, LPCWSTR szDescription, LPCWSTR szFileName, LPCWSTR szThreadingModel = L"Both", LPCWSTR szServerType     = L"InprocServer32" );
-STDAPI AMovieSetupUnregisterServer( CLSID clsServer );
+STDAPI AMovieSetupRegisterServer(CLSID   clsServer, LPCWSTR szDescription, LPCWSTR szFileName, LPCWSTR szThreadingModel = L"Both", LPCWSTR szServerType = L"InprocServer32");
+STDAPI AMovieSetupUnregisterServer(CLSID clsServer);
 
-STDAPI RegisterFilters( BOOL bRegister )
+STDAPI RegisterFilters(BOOL bRegister)
 {
     HRESULT hr = NOERROR;
     WCHAR achFileName[MAX_PATH];
     char achTemp[MAX_PATH];
     ASSERT(g_hInst != 0);
 
-    if( 0 == GetModuleFileNameA(g_hInst, achTemp, sizeof(achTemp))) 
+    if (0 == GetModuleFileNameA(g_hInst, achTemp, sizeof(achTemp)))
         return AmHresultFromWin32(GetLastError());
 
-    MultiByteToWideChar(CP_ACP, 0L, achTemp, lstrlenA(achTemp) + 1, 
-                       achFileName, NUMELMS(achFileName));
-  
+    MultiByteToWideChar(CP_ACP, 0L, achTemp, lstrlenA(achTemp) + 1,
+        achFileName, NUMELMS(achFileName));
+
     hr = CoInitialize(0);
-    if(bRegister)
-    { 
+    if (bRegister)
+    {
         hr = AMovieSetupRegisterServer(CLSID_LivestreamerVirtualCamera, L"Livestreamer Virtual Camera", achFileName, L"Both", L"InprocServer32");
     }
 
-    if( SUCCEEDED(hr) )
+    if (SUCCEEDED(hr))
     {
         IFilterMapper2 *fm = 0;
-        hr = CreateComObject( CLSID_FilterMapper2, IID_IFilterMapper2, fm );
-        if( SUCCEEDED(hr) )
+        hr = CreateComObject(CLSID_FilterMapper2, IID_IFilterMapper2, fm);
+        if (SUCCEEDED(hr))
         {
-            if(bRegister)
+            if (bRegister)
             {
                 IMoniker *pMoniker = 0;
                 REGFILTER2 rf2;
@@ -110,7 +110,7 @@ STDAPI RegisterFilters( BOOL bRegister )
                 rf2.dwMerit = MERIT_DO_NOT_USE;
                 rf2.cPins = 1;
                 rf2.rgPins = &sudOutputPinDesktop;
-				// this is the name that actually shows up in VLC et al. weird
+                // this is the name that actually shows up in VLC et al. weird
                 hr = fm->RegisterFilter(CLSID_LivestreamerVirtualCamera, L"Livestreamer Virtual Camera", &pMoniker, &CLSID_VideoInputDeviceCategory, NULL, &rf2);
             }
             else
@@ -119,13 +119,13 @@ STDAPI RegisterFilters( BOOL bRegister )
             }
         }
 
-      // release interface
-      //
-      if(fm)
-          fm->Release();
+        // release interface
+        //
+        if (fm)
+            fm->Release();
     }
 
-    if( SUCCEEDED(hr) && !bRegister )
+    if (SUCCEEDED(hr) && !bRegister)
         hr = AMovieSetupUnregisterServer(CLSID_LivestreamerVirtualCamera);
 
     CoFreeUnusedLibraries();
@@ -149,10 +149,10 @@ STDAPI DllUnregisterServer()
 //
 extern "C" BOOL WINAPI DllEntryPoint(HINSTANCE, ULONG, LPVOID);
 
-BOOL APIENTRY DllMain(HANDLE hModule, 
-                      DWORD  dwReason, 
-                      LPVOID lpReserved)
+BOOL APIENTRY DllMain(HANDLE hModule,
+    DWORD  dwReason,
+    LPVOID lpReserved)
 {
-	return DllEntryPoint((HINSTANCE)(hModule), dwReason, lpReserved);
+    return DllEntryPoint((HINSTANCE)(hModule), dwReason, lpReserved);
 }
 
