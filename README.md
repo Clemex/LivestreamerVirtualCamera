@@ -1,5 +1,10 @@
 # Livestreamer Virtual Camera
 
+ * Project based on: https://github.com/rdp/screen-capture-recorder-to-video-windows-free
+ * Link above based on this sample from the Windows 7 SDK: https://github.com/pauldotknopf/WindowsSDK7-Samples/tree/master/multimedia/directshow/filters/pushsource
+  * BaseClasses for DirectShow included in this project: https://github.com/pauldotknopf/WindowsSDK7-Samples/tree/master/multimedia/directshow/baseclasses
+  * ZeroMQ C++ bindings included in this project: https://github.com/zeromq/cppzmq
+  
 ## Depends on:
  * libzmq 4.0.4 http://zeromq.org/distro:microsoft-windows
  * opencv 3.1.0 http://opencv.org/releases.html
